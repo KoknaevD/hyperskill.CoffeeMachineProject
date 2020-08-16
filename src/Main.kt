@@ -22,7 +22,7 @@ object CoffeeMachine {
         while (true) {
             status()
             println("Write action (buy, fill, take):")
-            val action = scanner.next()!!
+            val action = scanner.nextLine()!!
             when (action) {
                 "buy" -> buy()
                 "take" -> take()
@@ -37,22 +37,34 @@ object CoffeeMachine {
         if (!coffeeList.containsKey(sortOfCoffee)) {return}
 
         val currentCoffee = coffeeList.getValue(sortOfCoffee)
+        if (total_milk >= currentCoffee.milk
+                && total_water >= currentCoffee.water
+                && total_coffeeBeans >= currentCoffee.coffeeBeans
+                && total_disposableCups > 1) {
+            makeCoffee(currentCoffee)
+        }
+    }
 
-
+    private fun makeCoffee(coffee: Coffee){
+        total_water -= coffee.water
+        total_milk -= coffee.milk
+        total_disposableCups -= 1
+        total_coffeeBeans -= coffee.coffeeBeans
+        total_money += coffee.price
     }
 
     private fun fill() {
         println("Write how many ml of water do you want to add:")
-        total_water = scanner.nextInt()
+        total_water += scanner.nextInt()
 
         println("Write how many ml of milk do you want to add:")
-        total_milk = scanner.nextInt()
+        total_milk += scanner.nextInt()
 
         println("Write how many grams of coffee beans do you want to add:")
-        total_coffeeBeans = scanner.nextInt()
+        total_coffeeBeans += scanner.nextInt()
 
         println("Write how many disposable cups of coffee do you want to add:")
-        total_disposableCups = scanner.nextInt()
+        total_disposableCups += scanner.nextInt()
 
     }
 
