@@ -3,44 +3,96 @@ import java.util.*
 val scanner = Scanner(System.`in`)
 
 fun main() {
-    CoffeeMachine.start()
+    while (CoffeeMachine.running) {
+        when (CoffeeMachine.status) {
+            CoffeeMachine.Status.Ready -> println("Write action (buy, fill, take, remaining, exit):")
+            CoffeeMachine.Status.CoffeeSelection -> println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: > 3")
+            CoffeeMachine.Status.WaterFilling -> println("Write how many ml of water do you want to add:")
+            CoffeeMachine.Status.MilkFilling -> println("Write how many ml of milk do you want to add:")
+            CoffeeMachine.Status.BeansFilling -> println("Write how many g of coffee beans do you want to add:")
+            CoffeeMachine.Status.CupsFilling -> println("Write how many disposable cups of coffee do you want to add:")
+
+        }
+
+        CoffeeMachine.input(scanner.nextLine()!!)
+    }
 }
 
 
 object CoffeeMachine {
+    enum class Status{
+        Ready,
+        CoffeeSelection,
+        WaterFilling,
+        MilkFilling,
+        BeansFilling,
+        CupsFilling
+    }
+
+    var status = Status.Ready
     private var total_milk = 540
     private var total_water = 400
     private var total_coffeeBeans = 120
     private var total_disposableCups = 9
     private var total_money = 550
-    private var running = true
+    var running = true
 
-    fun start() {
-
-        while (running) {
-            println("Write action (buy, fill, take, remaining, exit):")
-            when (scanner.nextLine()!!) {
-                "buy" -> buy()
+    fun input(input: String) {
+        when (status) {
+            Status.Ready -> when (input){
                 "take" -> take()
-                "fill" -> fill()
+                "fill" -> changeStatusToWaterFilling()
+                "buy" -> changeStatusToCoffeeSelection()
                 "remaining" -> status()
-                "exit" -> running = false
+                "exit" -> offMachine()
             }
+            Status.CoffeeSelection -> {
+                buy(input)
+            }
+            else -> fill(input)
         }
     }
 
-    private fun buy() {
-        println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: > 3")
-        var input = ""
-        main_loop@while (scanner.hasNext()) {
-            input = scanner.nextLine()!!
-            when (input) {
-                in "1".."3" -> break@main_loop
-                "exit" -> {
-                    running = false
-                    return
-                }
-                "back" -> return
+    private fun offMachine() {
+        running = false
+    }
+
+    private fun changeStatusToCoffeeSelection() {
+        status = Status.CoffeeSelection
+    }
+
+    private fun changeStatusToReady() {
+        status = Status.Ready
+    }
+
+    private fun changeStatusToWaterFilling() {
+        status = Status.WaterFilling
+    }
+
+    private fun changeStatusToMilkFilling() {
+        status = Status.MilkFilling
+    }
+
+    private fun changeStatusToBeansFilling() {
+        status = Status.BeansFilling
+    }
+
+    private fun changeStatusToCupsFilling() {
+        status = Status.CupsFilling
+    }
+
+
+
+    private fun buy(input: String) {
+
+        when (input) {
+            "exit" -> {
+                running = false
+                return
+            }
+            "back" -> {
+                changeStatusToReady()
+                return
             }
         }
 
@@ -59,6 +111,7 @@ object CoffeeMachine {
                 makeCoffee(currentCoffee)
             }
         }
+        changeStatusToReady()
     }
 
     private fun makeCoffee(coffee: Coffee){
@@ -69,19 +122,27 @@ object CoffeeMachine {
         total_money += coffee.price
     }
 
-    private fun fill() {
-        println("Write how many ml of water do you want to add:")
-        total_water += scanner.nextInt()
-
-        println("Write how many ml of milk do you want to add:")
-        total_milk += scanner.nextInt()
-
-        println("Write how many grams of coffee beans do you want to add:")
-        total_coffeeBeans += scanner.nextInt()
-
-        println("Write how many disposable cups of coffee do you want to add:")
-        total_disposableCups += scanner.nextInt()
-
+    private fun fill(input: String) {
+        val inputQ = input.toInt()
+        when (status) {
+            Status.WaterFilling -> {
+                total_water += inputQ
+                changeStatusToMilkFilling()
+            }
+            Status.MilkFilling -> {
+                total_milk += inputQ
+                changeStatusToBeansFilling()
+            }
+            Status.BeansFilling -> {
+                total_coffeeBeans += inputQ
+                changeStatusToCupsFilling()
+            }
+            Status.CupsFilling -> {
+                total_disposableCups += inputQ
+                changeStatusToReady()
+            }
+            else -> {}
+        }
     }
 
     private fun take() {
@@ -104,6 +165,4 @@ object CoffeeMachine {
 
 }
 
-class Coffee(val water: Int, val milk: Int, val coffeeBeans: Int, val price: Int) {
-
-}
+class Coffee(val water: Int, val milk: Int, val coffeeBeans: Int, val price: Int)
