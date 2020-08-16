@@ -4,44 +4,60 @@ val scanner = Scanner(System.`in`)
 
 fun main() {
     CoffeeMachine.start()
-
-
 }
 
 
 object CoffeeMachine {
-    private var total_milk = 0
-    private var total_water = 0
-    private var total_coffeeBeans = 0
-    private var total_disposableCups = 0
-    private var total_money = 0
-
+    private var total_milk = 540
+    private var total_water = 400
+    private var total_coffeeBeans = 120
+    private var total_disposableCups = 9
+    private var total_money = 550
+    private var running = true
 
     fun start() {
 
-        while (true) {
-            status()
-            println("Write action (buy, fill, take):")
-            val action = scanner.nextLine()!!
-            when (action) {
+        while (running) {
+            println("Write action (buy, fill, take, remaining, exit):")
+            when (scanner.nextLine()!!) {
                 "buy" -> buy()
                 "take" -> take()
                 "fill" -> fill()
+                "remaining" -> status()
+                "exit" -> running = false
             }
         }
     }
 
-    fun buy() {
+    private fun buy() {
         println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: > 3")
-        val sortOfCoffee = scanner.nextInt()
+        var input = ""
+        main_loop@while (scanner.hasNext()) {
+            input = scanner.nextLine()!!
+            when (input) {
+                in "1".."3" -> break@main_loop
+                "exit" -> {
+                    running = false
+                    return
+                }
+                "back" -> return
+            }
+        }
+
+        val sortOfCoffee = input.toInt()
         if (!coffeeList.containsKey(sortOfCoffee)) {return}
 
         val currentCoffee = coffeeList.getValue(sortOfCoffee)
-        if (total_milk >= currentCoffee.milk
-                && total_water >= currentCoffee.water
-                && total_coffeeBeans >= currentCoffee.coffeeBeans
-                && total_disposableCups > 1) {
-            makeCoffee(currentCoffee)
+
+        when {
+            total_milk < currentCoffee.milk -> println("Sorry, not enough milk!")
+            total_water < currentCoffee.water -> println("Sorry, not enough water!")
+            total_coffeeBeans < currentCoffee.coffeeBeans -> println("Sorry, not enough coffee beans!")
+            total_disposableCups < 1 -> println("Sorry, not enough disposable cups!")
+            else -> {
+                println("I have enough resources, making you a coffee!")
+                makeCoffee(currentCoffee)
+            }
         }
     }
 
@@ -74,7 +90,7 @@ object CoffeeMachine {
     }
 
     private fun status() {
-        println("The coffee machine has: ")
+        println("\nThe coffee machine has: ")
         println("$total_water of water")
         println("$total_milk of milk")
         println("$total_coffeeBeans of coffee beans")
@@ -82,27 +98,7 @@ object CoffeeMachine {
         println("$total_money of money\n")
     }
 
-//    fun countCoffeeCups(cupsCount: Int) {
-//        val milk = total_Milk / CoffeeCup.milk
-//        val water = total_Water / CoffeeCup.water
-//        val coffeeBeans = total_CoffeeBeans / CoffeeCup.coffeeBeans
-//        val count = Math.min(Math.min(milk, water), coffeeBeans)
-//
-//        when {
-//            count < cupsCount -> {
-//                println("No, I can make only $count cups of coffee")
-//            }
-//            count == 1 -> {
-//                println("Yes, I can make that amount of coffee")
-//            }
-//            else -> {
-//                println("Yes, I can make that amount of coffee (and even ${count - 1} more than that)")
-//            }
-//        }
-//
-//    }
-
-    val coffeeList = mapOf(1 to Coffee(200, 0, 16, 4),
+    private val coffeeList = mapOf(1 to Coffee(250, 0, 16, 4),
             2 to Coffee(350, 75, 20, 7),
             3 to Coffee(200, 100, 12, 6))
 
